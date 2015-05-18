@@ -75,14 +75,18 @@ sub _convert_data_for_GPGGA
 
     my $convert = sub {
         my ($datapoint) = @_;
-        $datapoint /= 100;
-        return int($datapoint) + ($datapoint - int($datapoint))
-            * 1.66666667;
+        my ($deg, $arcmin, $arcsec) = $datapoint =~ /\A
+            (\d{2,3})
+            (\d{2})
+            \.
+            (\d+)
+        \z/x;
+
+        return ($deg, $arcmin, $arcsec);
     };
 
-    $data[1] = $convert->( $data[1] );
-    $data[3] = $convert->( $data[3] );
-
+    splice @data, 3, 1, $convert->( $data[3] );
+    splice @data, 1, 1, $convert->( $data[1] );
     return @data;
 }
 

@@ -21,7 +21,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 6;
+use Test::More tests => 4;
 use v5.14;
 use Device::GPS;
 use Device::GPS::Connection;
@@ -44,13 +44,31 @@ isa_ok( $gps => 'Device::GPS' );
 
 
 $gps->add_callback( $gps->CALLBACK_POSITION, sub {
-    my ($time, $lat, $ns, $long, $ew, $quality, $satellites, $horz_dil, 
-        $altitude, $height, $time_since_last_dgps, $dgps_station_id) = @_;
+    my ($time, $lat_deg, $lat_min, $lat_sec, $ns,
+        $long_deg, $long_min, $long_sec, $ew,
+        $quality, $satellites, $horz_dil, $altitude, $height, 
+        $time_since_last_dgps, $dgps_station_id) = @_;
     # Check within acceptable floating point error
-    cmp_ok( $lat,  '>=', 48.1173000002346 - 0.00001, "Lat correct (1)" );
-    cmp_ok( $lat,  '<=', 48.1173000002346 + 0.00001, "Lat correct (2)" );
-    cmp_ok( $long, '>=', 11.5166666677 - 0.00001,    "Long correct (1)" );
-    cmp_ok( $long, '<=', 11.5166666677 + 0.00001,    "Long correct (2)" );
+    note( "Lat: $lat_deg\N{U+00B0} $lat_min.$lat_sec' $ns" );
+    note( "Long: $long_deg\N{U+00B0} $long_min.$lat_sec' $ew" );
+    is_deeply({
+        deg => $lat_deg,
+        min => $lat_min,
+        sec => $lat_sec,
+    }, {
+        deg => '48',
+        min => '07',
+        sec => '038',
+    });
+    is_deeply({
+        deg => $long_deg,
+        min => $long_min,
+        sec => $long_sec,
+    }, {
+        deg => '011',
+        min => '31',
+        sec => '000',
+    });
 });
 $gps->add_callback( $gps->CALLBACK_VELOCITY, sub {
     my ($true_track, undef, $mag_track, undef, $ground_speed_knots, undef,
