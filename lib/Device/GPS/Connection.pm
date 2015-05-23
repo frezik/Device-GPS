@@ -32,3 +32,15 @@ requires 'read_nmea_sentence';
 1;
 __END__
 
+
+=head1 NAME
+
+  Device::GPS::Connection
+
+=head1 DESCRIPTION
+
+Role for reading GPS data from some source.  Has one required method, 
+C<read_nmea_sentence>, which returns the next NMEA sentence from the 
+source (or a blank line).
+
+=cut
