@@ -1,4 +1,5 @@
 #!perl
+use utf8;
 # Copyright (c) 2015  Timm Murray
 # All rights reserved.
 # 
@@ -40,8 +41,8 @@ $gps->add_callback( $gps->CALLBACK_POSITION, sub {
         $long_deg, $long_min, $long_sec, $ew,
         $quality, $satellites, $horz_dil, $altitude, $height, 
         $time_since_last_dgps, $dgps_station_id) = @_;
-    say "Lat: $lat_deg deg $lat_min.$lat_sec' $ns";
-    say "Long: $long_deg deg $long_min.$lat_sec' $ew";
+    say "Lat: $lat_deg° $lat_min.$lat_sec' $ns";
+    say "Long: $long_deg° $long_min.$lat_sec' $ew";
 });
 
 
