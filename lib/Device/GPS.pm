@@ -126,9 +126,122 @@ __END__
 
 =head1 SYNOPSIS
 
+    my $gps = Device::GPS->new({
+        connection => Device::GPS::Connection::Serial->new({
+            port => '/dev/ttyACM0',
+            baud => 9600,
+        }),
+    });
+    $gps->add_callback( $gps->CALLBACK_POSITION, sub {
+        my ($time, $lat_deg, $lat_min, $lat_sec, $ns,
+            $long_deg, $long_min, $long_sec, $ew,
+            $quality, $satellites, $horz_dil, $altitude, $height, 
+            $time_since_last_dgps, $dgps_station_id) = @_;
+        say "Lat: $lat_deg deg $lat_min.$lat_sec' $ns";
+        say "Long: $long_deg deg $long_min.$lat_sec' $ew";
+    });
+
+
+    while(1) { $gps->parse_next }
+
 =head1 DESCRIPTION
 
+Captures GPS data using a callback system.
+
 =head1 METHODS
+
+=head2 new
+
+    my $gps = Device::GPS->new({
+        connection => Device::GPS::Connection::Serial->new({
+            port => '/dev/ttyACM0',
+            baud => 9600,
+        }),
+    });
+
+Constructor.  The C<connection> parameter needs to be some object that 
+does the C<Device::GPS::Connection> role.
+
+=head2 parse_next
+
+Call this continually in a loop to get the next set of data.
+
+=head2 add_callback
+
+  add_callback( $callback_type, $callback )
+
+Set a callback that will be called when we parse a given GPS command.  
+There are constants provided for the types.  Below is a list of the 
+constants and the arguments your callback will get for each one.
+
+=head3 CALLBACK_POSITION (GPGGA)
+
+  ($time, $lat_deg, $lat_min, $lat_sec, $ns,
+      $long_deg, $long_min, $long_sec, $ew,
+      $quality, $satellites, $horz_dil, $altitude, $height, 
+      $time_since_last_dgps, $dgps_station_id);
+
+=over
+
+=item * time - Time of capture
+
+=item * lat_deg - Latitude degrees
+
+=item * lat_min - Latitude arcminutes
+
+=item * lat_sec - Latitude arcseconds
+
+=item * ns - "N" or "S" for latitude
+
+=item * long_deg - Longitude degrees
+
+=item * long_min - Longitude arcminutes
+
+=item * long_sec - Longitude arcseconds
+
+=item * ew - "E" or "W" for longitude
+
+=item * quality - Quality number
+
+=item * satellites - Number of satellites being tracked
+
+=item * horz_dil - Horizontal dilution of position
+
+=item * altitude - Altitude in meters above sealevel
+
+=item * height - Height of geoid
+
+=item * time_since_last_dgps - time (in seconds) since last DGPS update
+
+=item * dgps_station_id - DGPS station ID number
+
+=back
+
+=head3 CALLBACK_VELOCITY (GPVTG)
+
+  ($true_track, 'T', $mag_track, 'M', $ground_speed_knots, 'N',
+      $ground_speed_kph, 'K');
+
+=over
+
+=item * true_track - True track made good (degrees)
+
+=item * mag_track - Magnetic track made good
+
+=item * ground_speed_knots - Ground speed in knots
+
+=item * ground_speed_kph - Ground speed in kph
+
+=back
+
+=for TODO
+
+CALLBACK_ACTIVE_SATS (GPGSA)
+CALLBACK_SATS_IN_VIEW (GPGSV)
+CALLBACK_REC_MIN (GPRMC)
+CALLBACK_GEO_LOC (GPGLL)
+
+=cut
 
 =head1 SEE ALSO
 
