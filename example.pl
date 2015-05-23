@@ -1,3 +1,4 @@
+#!perl
 # Copyright (c) 2015  Timm Murray
 # All rights reserved.
 # 
@@ -21,9 +22,27 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 3;
 use v5.14;
+use warnings;
+use Device::GPS;
+use Device::GPS::Connection::Serial;
 
-use_ok( 'Device::GPS::Connection' );
-use_ok( 'Device::GPS::Connection::Serial' );
-use_ok( 'Device::GPS' );
+my $PORT = shift // '/dev/ttyAMA0';
+
+my $gps = Device::GPS->new({
+    connection => Device::GPS::Connection::Serial->new({
+        port => $PORT,
+        baud => 9600,
+    }),
+});
+$gps->add_callback( $gps->CALLBACK_POSITION, sub {
+    my ($time, $lat_deg, $lat_min, $lat_sec, $ns,
+        $long_deg, $long_min, $long_sec, $ew,
+        $quality, $satellites, $horz_dil, $altitude, $height, 
+        $time_since_last_dgps, $dgps_station_id) = @_;
+    say "Lat: $lat_deg deg $lat_min.$lat_sec' $ns";
+    say "Long: $long_deg deg $long_min.$lat_sec' $ew";
+});
+
+
+while(1) { $gps->parse_next }

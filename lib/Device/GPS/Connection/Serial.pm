@@ -21,9 +21,49 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 3;
+package Device::GPS::Connection::Serial;
 use v5.14;
+use warnings;
+use Moose;
+use namespace::autoclean;
+use Device::GPS::Connection;
+use Device::SerialPort;
 
-use_ok( 'Device::GPS::Connection' );
-use_ok( 'Device::GPS::Connection::Serial' );
-use_ok( 'Device::GPS' );
+with 'Device::GPS::Connection';
+
+has '_dev' => (
+    is  => 'ro',
+    isa => 'Device::SerialPort',
+);
+
+
+sub BUILDARGS
+{
+    my ($class, $args) = @_;
+    my $port = delete $args->{port};
+    my $baud = delete $args->{baud} // 9600;
+
+    my $dev = Device::SerialPort->new( $port );
+    $dev->baudrate( $baud );
+    $args->{'_dev'}    = $dev;
+
+    return $args;
+}
+
+
+sub read_nmea_sentence
+{
+    my ($self) = @_;
+    my $dev = $self->_dev;
+    my $line = $dev->READLINE;
+    return '' if ! defined $line;
+    chomp $line;
+    return $line;
+}
+
+
+no Moose;
+__PACKAGE__->meta->make_immutable;
+1;
+__END__
+
